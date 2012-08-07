@@ -29,7 +29,7 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'blocks[system_main][region]' => 'content',
     );
-    $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
+    $this->drupalPostForm('admin/structure/block', $edit, t('Save blocks'));
 
     $this->createNodeType('page', 'Page', TRANSLATION_ENABLED, FALSE);
   }
@@ -59,7 +59,7 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'languages[de]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
     $this->assertText(t('One job has been created.'));
     // Verify that we are still on the translate tab.
     $this->assertText(t('Translations of @title', array('@title' => $node->title)));
@@ -98,7 +98,7 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
 
     $this->clickLink('submit');
 
-    $this->drupalPost(NULL, array(), t('Submit to translator'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator'));
 
     // Make sure that the job is active now.
     $this->assertText(t('Active'));
@@ -116,10 +116,10 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $this->clickLink('manage');
     $this->clickLink('review');
 
-    $this->drupalPost(NULL, array(), '✓');
+    $this->drupalPostForm(NULL, array(), '✓');
     // Verify that the accepted character is shown.
     $this->assertText('&#x2611;');
-    $this->drupalPost(NULL, array(), t('Save as completed'));
+    $this->drupalPostForm(NULL, array(), t('Save as completed'));
     $this->assertText(t('Accepted'));
     $this->assertText('1/0/0');
 
@@ -154,14 +154,14 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'languages[de]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
 
     // Verify that we are on the translate tab.
     $this->assertText(t('One job needs to be checked out.'));
     $this->assertText($node->title);
 
     // Submit.
-    $this->drupalPost(NULL, array(), t('Submit to translator'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator'));
 
     // Make sure that we're back on the translate tab.
     $this->assertEqual(url('node/' . $node->nid . '/translate', array('absolute' => TRUE)), $this->getUrl());
@@ -187,12 +187,12 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'languages[es]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
 
     // Verify that we are on the checkout page.
     $this->assertText(t('One job needs to be checked out.'));
     $this->assertText($node->title);
-    $this->drupalPost(NULL, array(), t('Submit to translator'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator'));
 
     // Make sure that we're back on the originally defined destination URL.
     $this->assertEqual(url('node', array('absolute' => TRUE)), $this->getUrl());
@@ -222,16 +222,16 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
       'languages[de]' => TRUE,
       'languages[es]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
 
     // Verify that we are on the translate tab.
     $this->assertText(t('2 jobs need to be checked out.'));
 
     // Submit all jobs.
     $this->assertText($node->title);
-    $this->drupalPost(NULL, array(), t('Submit to translator and continue'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator and continue'));
     $this->assertText($node->title);
-    $this->drupalPost(NULL, array(), t('Submit to translator'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator'));
 
     // Make sure that we're back on the translate tab.
     $this->assertEqual(url('node/' . $node->nid . '/translate', array('absolute' => TRUE)), $this->getUrl());
@@ -285,7 +285,7 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'languages[de]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
 
     // Verify that we are on the translate tab.
     $this->assertNoText(t('One job needs to be checked out.'));
@@ -339,14 +339,14 @@ class TMGMTNodeSourceUITestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'languages[de]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translation'));
+    $this->drupalPostForm(NULL, $edit, t('Request translation'));
 
     // Verify that we are on the translate tab.
     $this->assertText(t('One job needs to be checked out.'));
     $this->assertText($node->title);
 
     // Submit.
-    $this->drupalPost(NULL, array(), t('Submit to translator'));
+    $this->drupalPostForm(NULL, array(), t('Submit to translator'));
 
     // Make sure that we're back on the translate tab.
     $this->assertEqual(url('node/' . $node->nid . '/translate', array('absolute' => TRUE)), $this->getUrl());

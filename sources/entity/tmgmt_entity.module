@@ -12,7 +12,7 @@ function tmgmt_entity_tmgmt_source_plugin_info() {
   $info['entity'] = array(
     'label' => t('Entity'),
     'description' => t('Source handler for entities.'),
-    'plugin controller class' => 'TMGMTEntitySourcePluginController',
+    'plugin controller class' => 'Drupal\tmgmt_entity\EntitySourcePluginController',
     'item types' => array(),
   );
 
@@ -64,31 +64,17 @@ function tmgmt_entity_get_translatable_bundles($entity_type) {
 
   // If given entity type does not have entity translations enabled, no reason
   // to continue.
-  if (!in_array($entity_type, variable_get('entity_translation_entity_types', array()))) {
+  $enabled_types = \Drupal::service('plugin.manager.tmgmt.source')->createInstance('entity')->getItemTypes();
+  if (!isset($enabled_types[$entity_type])) {
     return array();
   }
 
-  $entity_info = entity_get_info($entity_type);
   $translatable_bundle_types = array();
-
-  foreach ($entity_info['bundles'] as $bundle_type => $bundle_definition) {
-
-    if ($entity_type == 'comment') {
-      $bundle_type = str_replace('comment_node_', '', $bundle_type);
-      if (variable_get('language_content_type_' . $bundle_type) == ENTITY_TRANSLATION_ENABLED) {
-        $translatable_bundle_types[$bundle_type] = $bundle_definition['label'];
-      }
-    }
-    elseif ($entity_type == 'node') {
-      if (variable_get('language_content_type_' . $bundle_type) == ENTITY_TRANSLATION_ENABLED) {
-        $translatable_bundle_types[$bundle_type] = $bundle_definition['label'];
-      }
-    }
-    else {
+  foreach (entity_get_bundles($entity_type) as $bundle_type => $bundle_definition) {
+    if (content_translation_enabled($entity_type, $bundle_type)) {
       $translatable_bundle_types[$bundle_type] = $bundle_definition['label'];
     }
   }
-
   return $translatable_bundle_types;
 }
 
@@ -113,15 +99,18 @@ function tmgmt_entity_get_translatable_bundles($entity_type) {
  */
 function tmgmt_entity_get_translatable_entities($entity_type, $property_conditions = array(), $pager = FALSE, $limit = 20) {
 
-  if (!in_array($entity_type, variable_get('entity_translation_entity_types', array()))) {
+  // If given entity type does not have entity translations enabled, no reason
+  // to continue.
+  $enabled_types = \Drupal::service('plugin.manager.tmgmt.source')->createInstance('entity')->getItemTypes();
+  if (!isset($enabled_types[$entity_type])) {
     return array();
   }
 
   $entity_info = entity_get_info($entity_type);
-  $label_key = isset($entity_info['entity keys']['label']) ? $entity_info['entity keys']['label'] : NULL;
+  $label_key = isset($entity_info['entity_keys']['label']) ? $entity_info['entity_keys']['label'] : NULL;
 
-  $query = db_select($entity_info['base table'], 'e');
-  $query->addField('e', $entity_info['entity keys']['id']);
+  $query = db_select($entity_info['base_table'], 'e');
+  $query->addField('e', $entity_info['entity_keys']['id']);
 
   if (!empty($label_key) && isset($property_conditions[$label_key])) {
     $search_tokens = explode(' ', $property_conditions[$label_key]);
@@ -147,14 +136,6 @@ function tmgmt_entity_get_translatable_entities($entity_type, $property_conditio
     if ($entity_type == 'comment' && $property_name == 'type') {
       continue;
     }
-
-    // Switch to vid for taxonomy terms.
-    if ($entity_type == 'taxonomy_term' && $property_name == 'vocabulary_machine_name') {
-      $property_name = 'vid';
-      $vocabulary = taxonomy_vocabulary_machine_name_load($property_value);
-      $property_value = $vocabulary->vid;
-    }
-
     $query->condition('e.' . $property_name, $property_value);
   }
 
@@ -168,9 +149,14 @@ function tmgmt_entity_get_translatable_entities($entity_type, $property_conditio
       $node_table_alias = 'n';
     }
 
-    // Get translatable node types and check if it is worth to continue.
-    $translatable_node_types = array_keys(tmgmt_entity_get_translatable_bundles('node'));
-    if (empty($translatable_node_types)) {
+    $bundles = array();
+    foreach (array_keys(entity_get_bundles($entity_type)) as $bundle) {
+      if (content_translation_enabled($entity_type, $bundle)) {
+        $bundles[] = $bundle;
+        break;
+      }
+    }
+    if (!$bundles) {
       return array();
     }
 
@@ -180,24 +166,24 @@ function tmgmt_entity_get_translatable_entities($entity_type, $property_conditio
     }
     // If not, query db only for translatable node types.
     else {
-      $query->condition($node_table_alias . '.type', $translatable_node_types);
+      $query->condition($node_table_alias . '.type', $bundles);
     }
   }
 
   if ($pager) {
-    $query = $query->extend('PagerDefault')->limit($limit);
+    $query = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit($limit);
   }
   else {
     $query->range(0, $limit);
   }
 
-  $query->orderBy($entity_info['entity keys']['id'], 'DESC');
+  $query->orderBy($entity_info['entity_keys']['id'], 'DESC');
 
   $entity_ids = $query->execute()->fetchCol();
   $entities = array();
 
   if (!empty($entity_ids)) {
-    $entities = entity_load($entity_type, $entity_ids);
+    $entities = entity_load_multiple($entity_type, $entity_ids);
   }
 
   return $entities;
@@ -206,60 +192,41 @@ function tmgmt_entity_get_translatable_entities($entity_type, $property_conditio
 /**
  * Implements hook_tmgmt_source_suggestions()
  */
-function tmgmt_entity_tmgmt_source_suggestions(array $items, TMGMTJob $job) {
+function tmgmt_entity_tmgmt_source_suggestions(array $items, \Drupal\tmgmt\Entity\Job $job) {
   $suggestions = array();
 
   foreach ($items as $item) {
-    if (($item instanceof TMGMTJobItem) && ($item->plugin == 'entity') || ($item->plugin == 'node')) {
+    if (($item instanceof \Drupal\tmgmt\Entity\JobItem) && ($item->plugin == 'entity') || ($item->plugin == 'node')) {
       // Load the entity and extract the bundle name to get all fields from the
       // current entity.
-      $entity = entity_load_single($item->item_type, $item->item_id);
-      list(, , $bundle) = entity_extract_ids($item->item_type, $entity);
-      $field_instances = field_info_instances($item->item_type, $bundle);
-
-      // Get all translatable entity types.
-      $entity_types = array_filter(variable_get('entity_translation_entity_types', array()));
+      $entity = entity_load($item->item_type, $item->item_id);
 
       // Loop over all fields, check if they are NOT translatable. Only if a
       // field is not translatable we may suggest a referenced entity. If so,
       // check for a supported field type (image and file currently here).
-      foreach ($field_instances as $instance) {
-        $field = field_info_field($instance['field_name']);
-        $field_type = $field['type'];
-        switch ($field_type) {
-          case 'file':
-          case 'image':
-            // 'File' (and images) must be translatable entity types.
-            // Other files we not suggest here. Get all field items from the
-            // current field and suggest them as translatable.
-            $field_name = $field['field_name'];
-            if (isset($entity_types['file']) && ($field_items = field_get_items($item->item_type, $entity, $field_name))) {
-              // Add all files as a suggestion.
-              foreach ($field_items as $field_item) {
-                $file_entity = entity_load_single('file', $field_item['fid']);
+      foreach ($entity as $field) {
+        $definition = $field->getFieldDefinition();
 
-                // Check if there is already a translation available for this
-                // file. If so, just continue with the next file.
-                $handler = entity_translation_get_handler('file', $file_entity);
-                if ($handler instanceof EntityTranslationHandlerInterface) {
-                  $translations = $handler->getTranslations();
-                  if (isset($translations->data[$job->target_language])) {
-                    continue;
-                  }
-                }
-
+        // Loop over all field items.
+        foreach ($field as $field_item) {
+          // Loop over all properties of a field item.
+          foreach ($field_item->getProperties(TRUE) as $property) {
+            if ($property instanceof \Drupal\Core\Entity\Plugin\DataType\EntityReference && $target = $property->getTarget()) {
+              $enabled = content_translation_enabled($target->entityType(), $target->bundle());
+              if ($enabled) {
                 // Add the translation as a suggestion.
                 $suggestions[] = array(
-                  'job_item' => tmgmt_job_item_create('entity', 'file', $file_entity->fid),
-                  'reason' => t('Field @label', array('@label' => $instance['label'])),
-                  'from_item' => $item->tjiid,
+                  'job_item' => tmgmt_job_item_create('entity', $target->entityType(), $target->id()),
+                  'reason' => t('Field @label', array('@label' => $definition->getFieldLabel())),
+                  'from_item' => $item->id(),
                 );
               }
             }
-            break;
+          }
         }
       }
     }
   }
+
   return $suggestions;
 }

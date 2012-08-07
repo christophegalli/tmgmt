@@ -1,0 +1,2 @@
+tmgmt.local_tasks:
+  derivative: 'Drupal\tmgmt\Plugin\Derivative\SourceLocalTasks'

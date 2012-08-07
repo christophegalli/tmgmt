@@ -5,10 +5,12 @@
  * Provides page and forms callbacks.
  */
 
+use Drupal\Component\Utility\NestedArray;
+
 /**
  * Simple page callback for viewing a task.
  *
- * @param TMGMTJob $task
+ * @param \Drupal\tmgmt\Entity\Job $task
  *   The viewed task.
  *
  * @return array
@@ -232,7 +234,7 @@ function tmgmt_local_translation_form_save_as_completed_submit($form, &$form_sta
   }
 
   /**
-   * @var TMGMTJobItem $job_item.
+   * @var JobItem $job_item.
    */
   $job_item = $form_state['job_item'];
 
@@ -385,7 +387,7 @@ function tmgmt_local_translation_form_update_state_submit($form, &$form_state) {
 function tmgmt_local_translation_form_update_state_ajax($form, &$form_state) {
   $key = array_slice($form_state['triggering_element']['#array_parents'], 0, 3);
   $commands = array();
-  $render_data = drupal_array_get_nested_value($form, $key);
+  $render_data = NestedArray::getValue($form, $key);
   $commands[] = ajax_command_replace(NULL, drupal_render($render_data));
   tmgmt_ui_write_request_messages($form_state['job_item']->getJob());
   $commands[] = ajax_command_html('#tmgmt-status-messages-' . strtolower($render_data['#parent_label'][0]), theme('status_messages'));
@@ -485,7 +487,7 @@ function tmgmt_local_translation_reassign_form_submit($form, &$form_state) {
   foreach ($form_state['tasks'] as $task_id) {
     $task = tmgmt_local_task_load($task_id);
     if ($task) {
-      if ($translator->uid) {
+      if ($translator->id()) {
         $task->assign($translator);
       }
       else {

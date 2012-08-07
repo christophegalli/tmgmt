@@ -1,0 +1,5 @@
+tmgmt_ui_translator_add:
+  route_name: tmgmt_translator_add
+  title: 'Add translator'
+  appears_on:
+    - tmgmt_translator_list

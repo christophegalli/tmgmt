@@ -5,6 +5,8 @@
  * Entity class.
  */
 
+use Drupal\Component\Utility\NestedArray;
+
 /**
  * Entity class for the local task item entity.
  *
@@ -104,7 +106,7 @@ class TMGMTLocalTaskItem extends Entity {
   /**
    * Returns the translation job item.
    *
-   * @return TMGMTJobItem
+   * @return JobItem
    */
   public function getJobItem() {
     return entity_load_single('tmgmt_job_item', $this->tjiid);
@@ -184,7 +186,7 @@ class TMGMTLocalTaskItem extends Entity {
       }
       // Apply the value.
       else {
-        drupal_array_set_nested_value($this->data, array_merge(tmgmt_ensure_keys_array($key), array($index)), $value);
+        NestedArray::setValue($this->data, array_merge(tmgmt_ensure_keys_array($key), array($index)), $value);
       }
     }
   }
@@ -216,7 +218,7 @@ class TMGMTLocalTaskItem extends Entity {
     if ($index) {
       $key = array_merge($key, array($index));
     }
-    return drupal_array_get_nested_value($this->data, $key);
+    return NestedArray::getValue($this->data, $key);
   }
 
   /**

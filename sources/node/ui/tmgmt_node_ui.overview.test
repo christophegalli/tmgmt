@@ -81,7 +81,7 @@ class TMGMTNodeSourceUIOverviewTestCase extends TMGMTEntityTestCaseUtility {
       'views_bulk_operations[1]' => TRUE,
       'views_bulk_operations[2]' => TRUE,
     );
-    $this->drupalPost(NULL, $edit, t('Request translations'));
+    $this->drupalPostForm(NULL, $edit, t('Request translations'));
 
     // Some assertions on the submit form.
     $this->assertText(t('@title and 2 more (English to ?, Unprocessed)', array('@title' => $node1->title)));
@@ -94,7 +94,7 @@ class TMGMTNodeSourceUIOverviewTestCase extends TMGMTEntityTestCaseUtility {
     $edit = array(
       'target_language' => 'de',
     );
-    $this->drupalPost(NULL, $edit, t('Submit to translator'));
+    $this->drupalPostForm(NULL, $edit, t('Submit to translator'));
     $this->assertNoText(t('The translation of @title to @language is finished and can now be reviewed.', array('@title' => $node1->title, '@language' => t('German'))));
     $this->assertText(t('The translation for @title has been accepted.', array('@title' => $node1->title)));
     $this->assertNoText(t('The translation of @title to @language is finished and can now be reviewed.', array('@title' => $node2->title, '@language' => t('German'))));
