@@ -28,7 +28,7 @@ class LocaleSource extends SourcePluginBase {
    * {@inheritdoc}
    */
   public function getItemTypes() {
-    return array('default' => t('Default'));
+    return array('default' => t('Locale'));
   }
 
   /**

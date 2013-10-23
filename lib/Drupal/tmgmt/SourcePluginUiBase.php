@@ -70,50 +70,6 @@ class SourcePluginUiBase extends PluginBase implements SourcePluginUiInterface {
   /**
    * {@inheritdoc}
    */
-  public function hook_menu() {
-    $items = array();
-    if ($types = tmgmt_source_translatable_item_types($this->pluginId)) {
-      $defaults = array(
-        'page callback' => 'drupal_get_form',
-        'access callback' => 'entity_page_create_access',
-        'access arguments' => array('tmgmt_job'),
-      );
-      if (isset($this->pluginDefinition['file'])) {
-        $defaults['file'] = $this->pluginDefinition['file'];
-      }
-      if (isset($this->pluginDefinition['file path'])) {
-        $defaults['file path'] = $this->pluginDefinition['file path'];
-      }
-      foreach ($types as $type => $name) {
-        $items['admin/tmgmt/sources/' . $this->pluginId . '_' . $type] = $defaults + array(
-          'title' => check_plain($name),
-          'page arguments' => array('tmgmt_ui_' . $this->pluginId . '_source_' . $type . '_overview_form', $this->pluginId, $type),
-          'type' => MENU_LOCAL_TASK,
-        );
-      }
-    }
-    return $items;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function hook_forms() {
-    $info = array();
-    if ($types = tmgmt_source_translatable_item_types($this->pluginId)) {
-      foreach (array_keys($types) as $type) {
-        $info['tmgmt_ui_' . $this->pluginId . '_source_' . $type . '_overview_form'] = array(
-          'callback' => 'tmgmt_ui_source_overview_form',
-          'wrapper_callback' => 'tmgmt_ui_source_overview_form_defaults',
-        );
-      }
-    }
-    return $info;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function hook_views_default_views() {
     return array();
   }

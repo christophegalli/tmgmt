@@ -42,20 +42,6 @@ interface SourcePluginUiInterface extends PluginInspectionInterface {
   /**
    * {@inheritdoc}
    *
-   * @see tmgmt_ui_menu().
-   */
-  public function hook_menu();
-
-  /**
-   * {@inheritdoc}
-   *
-   * @see tmgmt_ui_forms().
-   */
-  public function hook_forms();
-
-  /**
-   * {@inheritdoc}
-   *
    * @see tmgmt_ui_views_default_views().
    */
   public function hook_views_default_views();

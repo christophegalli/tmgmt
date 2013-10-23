@@ -2,8 +2,6 @@
 
 use Drupal\tmgmt\Entity\Job;
 use Drupal\tmgmt\Entity\JobItem;
-use Drupal\tmgmt\TranslatorRejectDataInterface;
-use Drupal\Component\Utility\NestedArray;
 
 /**
  * @file
@@ -24,41 +22,7 @@ function tmgmt_ui_menu() {
     'route_name' => 'tmgmt_translator_list',
     'weight' => 5,
   );
-  // Some source plugins might provide menu items.
-  foreach (Drupal::service('plugin.manager.tmgmt.source')->getDefinitions() as $plugin => $definition) {
-    $items += \Drupal::service('plugin.manager.tmgmt.source')->createUIInstance($plugin)->hook_menu();
-  }
   return $items;
-}
-
-/**
- * Implements hook_menu_alter().
- */
-function tmgmt_ui_menu_alter(&$items) {
-  $weight = NULL;
-  $default_path = NULL;
-  // Look for the sources overview local task with the lowest weight.
-  foreach ($items as $path => $item) {
-    $item += array('weight' => 0);
-    if (strpos($path, 'admin/tmgmt/sources') !== FALSE) {
-      if ($weight === NULL || $weight > $item['weight']) {
-        $weight = $item['weight'];
-        $default_path = $path;
-      }
-    }
-  }
-
-  // If we have found a default path, define a parent menu item based on it's
-  // definitions and change the type to a default local task.
-  if ($default_path) {
-    $items['admin/tmgmt/sources'] = array(
-      'title' => 'Sources',
-      'description' => 'Source overview',
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-    ) + $items[$default_path];
-    $items[$default_path]['type'] = MENU_DEFAULT_LOCAL_TASK;
-  }
 }
 
 /**

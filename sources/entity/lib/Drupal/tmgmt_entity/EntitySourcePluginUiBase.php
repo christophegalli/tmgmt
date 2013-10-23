@@ -217,16 +217,4 @@ abstract class EntitySourcePluginUiBase extends SourcePluginUiBase {
     }
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function hook_menu() {
-    $items = parent::hook_menu();
-    if (isset($items['admin/tmgmt/sources/entity_node'])) {
-      // We assume that nodes are the most important overview if enabled, so
-      // make sure they show up first.
-      $items['admin/tmgmt/sources/entity_node']['weight'] = -20;
-    }
-    return $items;
-  }
 }

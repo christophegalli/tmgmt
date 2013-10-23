@@ -1,2 +1,11 @@
-tmgmt.local_tasks:
+tmgmt.sources_parent:
+  route_name: tmgmt.source_overview
+  title: Settings
+  tab_root_id: views_view:view.tmgmt_ui_job_overview.page_1
+
+tmgmt.sources:
+  route_name: view.tmgmt_ui_job_overview.page_1
+  tab_root_id: views_view:view.tmgmt_ui_job_overview.page_1
+  tab_parent_id: tmgmt.sources_parent
   derivative: 'Drupal\tmgmt\Plugin\Derivative\SourceLocalTasks'
+  class: 'Drupal\tmgmt\Plugin\SourceLocalTask'

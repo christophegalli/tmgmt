@@ -91,7 +91,7 @@ class EntitySource extends SourcePluginBase {
   }
 
   /**
-   * Implements TMGMTEntitySourcePluginController::saveTranslation().
+   * {@inheritdoc}
    */
   public function saveTranslation(JobItem $job_item) {
     $entity = entity_load($job_item->item_type, $job_item->item_id);
@@ -130,7 +130,7 @@ class EntitySource extends SourcePluginBase {
   }
 
   /**
-   * Implements TMGMTEntitySourcePluginControllerInterface::getType().
+   * {@inheritdoc}
    */
   public function getType(JobItem $job_item) {
     if ($entity = entity_load($job_item->item_type, $job_item->item_id)) {

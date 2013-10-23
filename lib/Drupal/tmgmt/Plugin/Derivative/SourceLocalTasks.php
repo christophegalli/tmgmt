@@ -8,9 +8,8 @@
 namespace Drupal\tmgmt\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DerivativeBase;
-use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Plugin\Discovery\ContainerDerivativeInterface;
-use Drupal\Core\Routing\RouteProviderInterface;
+use Drupal\tmgmt\SourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,30 +18,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SourceLocalTasks extends DerivativeBase implements ContainerDerivativeInterface {
 
   /**
-   * The entity manager.
+   * The source manager.
    *
-   * @var \Drupal\Core\Entity\EntityManager
+   * @var \Drupal\tmgmt\SourceManager
    */
-  protected $entityManager;
+  protected $sourceManager;
 
   /**
-   * The route provider.
+   * Constructs a new SourceLocalTasks object.
    *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
+   * @param \Drupal\tmgmt\SourceManager $source_manager
+   *   The source manager.
    */
-  protected $routeProvider;
-
-  /**
-   * Constructs a new ContentTranslationLocalTasks.
-   *
-   * @param \Drupal\Core\Entity\EntityManager $entity_manager
-   *   The entity manager.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
-   *   The route provider.
-   */
-  public function __construct(EntityManager $entity_manager, RouteProviderInterface $route_provider) {
-    $this->entityManager = $entity_manager;
-    $this->routeProvider = $route_provider;
+  public function __construct(SourceManager $source_manager) {
+    $this->sourceManager = $source_manager;
   }
 
   /**
@@ -50,8 +39,7 @@ class SourceLocalTasks extends DerivativeBase implements ContainerDerivativeInte
    */
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
-      $container->get('entity.manager'),
-      $container->get('router.route_provider')
+      $container->get('plugin.manager.tmgmt.source')
     );
   }
 
@@ -59,31 +47,13 @@ class SourceLocalTasks extends DerivativeBase implements ContainerDerivativeInte
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions(array $base_plugin_definition) {
-    // Create tabs for all possible entity types.
-    foreach ($this->entityManager->getDefinitions() as $entity_type => $entity_info) {
-      if ($entity_info['translatable'] && isset($entity_info['translation'])) {
-        $path = '/' . preg_replace('/%(.*)/', '{$1}', $entity_info['menu_base_path']);
-        if ($routes = $this->routeProvider->getRoutesByPattern($path)->all()) {
-          // Find the route name for the entity page.
-          $entity_route_name = key($routes);
-          $entity_tab = $entity_route_name . '_tab';
-          // Find the route name for the translation overview.
-          $translation_route_name = "content_translation.translation_overview_$entity_type";
-          $translation_tab = $translation_route_name . '_tab';
-
-          // Both tabs will have the same root and entity type.
-          $common_tab_settings = array(
-            'tab_root_id' => $entity_tab,
-            'entity_type' => $entity_type,
-          );
-          $this->derivatives[$entity_tab] = $base_plugin_definition + $common_tab_settings;
-          $this->derivatives[$entity_tab]['title'] = t('Edit');
-          $this->derivatives[$entity_tab]['route_name'] = $entity_route_name;
-
-          $this->derivatives[$translation_tab] = $base_plugin_definition + $common_tab_settings;
-          $this->derivatives[$translation_tab]['title'] = t('Translate');
-          $this->derivatives[$translation_tab]['route_name'] = $translation_route_name;
-        }
+    // Create tabs for all possible source item types.
+    foreach ($this->sourceManager->getDefinitions() as $type => $definition) {
+      $plugin = $this->sourceManager->createInstance($type);
+      debug($plugin->getItemTypes());
+      foreach ($plugin->getItemTypes() as $item_type => $item_label) {
+        $this->derivatives[$type . ':' . $item_type] = $base_plugin_definition;
+        $this->derivatives[$type . ':' . $item_type]['title'] = $item_label;
       }
     }
     return parent::getDerivativeDefinitions($base_plugin_definition);
