@@ -114,7 +114,7 @@ class EntityUiSourcePluginUi extends EntitySourcePluginUiBase {
       $form['items']['#options'][$data['entity_id']] = $this->overviewRow($data);
     }
 
-    $form['pager'] = array('#markup' => theme('pager', array('tags' => NULL)));
+    $form['pager'] = array('#markup' => theme('pager', array()));
 
     return $form;
   }

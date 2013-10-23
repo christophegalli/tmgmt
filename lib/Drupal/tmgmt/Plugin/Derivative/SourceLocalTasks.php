@@ -48,12 +48,17 @@ class SourceLocalTasks extends DerivativeBase implements ContainerDerivativeInte
    */
   public function getDerivativeDefinitions(array $base_plugin_definition) {
     // Create tabs for all possible source item types.
+    $weight = 0;
     foreach ($this->sourceManager->getDefinitions() as $type => $definition) {
       $plugin = $this->sourceManager->createInstance($type);
-      debug($plugin->getItemTypes());
       foreach ($plugin->getItemTypes() as $item_type => $item_label) {
         $this->derivatives[$type . ':' . $item_type] = $base_plugin_definition;
         $this->derivatives[$type . ':' . $item_type]['title'] = $item_label;
+        $this->derivatives[$type . ':' . $item_type]['weight'] = $weight++;
+        $this->derivatives[$type . ':' . $item_type]['route_parameters'] = array(
+          'plugin' => $type,
+          'item_type' => $item_type,
+        );
       }
     }
     return parent::getDerivativeDefinitions($base_plugin_definition);

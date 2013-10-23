@@ -25,8 +25,6 @@ class SourceOverviewForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, array &$form_state, $plugin = NULL, $item_type = NULL) {
-    var_dump($plugin);
-    var_dump($item_type);
     $source = \Drupal::service('plugin.manager.tmgmt.source')->createInstance($plugin);
     $definition = \Drupal::service('plugin.manager.tmgmt.source')->getDefinition($plugin);
 
