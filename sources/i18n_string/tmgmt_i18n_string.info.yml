@@ -1,9 +1,0 @@
-name: 'i18n String Source'
-description: 'i18n String source plugin for the Translation Management system.'
-package: 'Translation Management'
-core: 8.x
-dependencies:
- - tmgmt_ui
- - i18n_string
- - i18n
- - variable
