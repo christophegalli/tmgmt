@@ -64,7 +64,7 @@ class Html implements FormatInterface {
    * Implements TMGMTFileExportInterface::import().
    */
   public function import($imported_file) {
-    $dom = new DOMDocument();
+    $dom = new \DOMDocument();
     $dom->loadHTMLFile($imported_file);
     $xml = simplexml_import_dom($dom);
 
@@ -82,7 +82,7 @@ class Html implements FormatInterface {
    * @param type $imported_file
    */
   public function validateImport($imported_file) {
-    $dom = new DOMDocument();
+    $dom = new \DOMDocument();
     if (!$dom->loadHTMLFile($imported_file)) {
       return FALSE;
     }

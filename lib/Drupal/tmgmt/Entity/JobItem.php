@@ -992,5 +992,18 @@ class JobItem extends Entity {
     return TRUE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function get($property_name) {
+    return isset($this->{$property_name}) ? $this->{$property_name} : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($property_name, $value) {
+    $this->{$property_name} = $value;
+  }
 
 }

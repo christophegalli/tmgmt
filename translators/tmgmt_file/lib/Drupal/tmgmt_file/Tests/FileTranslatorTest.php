@@ -57,7 +57,7 @@ class FileTranslatorTest extends TMGMTTestBase {
     $message = reset($messages);
 
     // @todo: This should be handled by the storage controller.
-    $variables = unserialize($message->variables);
+    $variables = $message->variables;
     $download_url = $variables['!link'];
 
     // "Translate" items.

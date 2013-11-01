@@ -7,6 +7,7 @@
 
 namespace Drupal\tmgmt\Tests;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Language\Language;
 
 /**
@@ -157,7 +158,7 @@ abstract class EntityTestBase extends TMGMTTestBase {
     foreach ($this->field_names['node'][$bundle] as $field_name) {
       // @todo: Why are some missing?
       if ($field_info = $this->container->get('field.info')->getField('node', $field_name)) {
-        $cardinality = $field_info->cardinality == FIELD_CARDINALITY_UNLIMITED ? 1 : $field_info->cardinality;
+        $cardinality = $field_info->cardinality == FieldDefinitionInterface::CARDINALITY_UNLIMITED ? 1 : $field_info->cardinality;
 
         // Create two deltas for each field.
         for ($delta = 0; $delta <= $cardinality; $delta++) {
@@ -193,7 +194,7 @@ abstract class EntityTestBase extends TMGMTTestBase {
 
     foreach ($this->field_names['taxonomy_term'][$vocabulary->machine_name] as $field_name) {
       $field_info = $this->container->get('field.info')->getField('taxonomy_term', $field_name);
-      $cardinality = $field_info->getFieldCardinality() == FIELD_CARDINALITY_UNLIMITED ? 1 : $field_info->getFieldCardinality();
+      $cardinality = $field_info->getFieldCardinality() == FieldDefinitionInterface::CARDINALITY_UNLIMITED ? 1 : $field_info->getFieldCardinality();
       $field_lang = $field_info->isFieldTranslatable() ? 'en' : Language::LANGCODE_DEFAULT;
 
       // Create two deltas for each field.

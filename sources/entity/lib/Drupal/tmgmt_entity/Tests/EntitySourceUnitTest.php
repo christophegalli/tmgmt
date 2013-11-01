@@ -8,6 +8,7 @@
 namespace Drupal\tmgmt_entity\Tests;
 
 use Drupal\system\Tests\Entity\EntityUnitTestBase;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Language\Language;
 
 /**
@@ -59,7 +60,7 @@ class EntitySourceUnitTest extends EntityUnitTestBase {
       'name' => 'image_test',
       'entity_type' => $this->entity_type,
       'type' => 'image',
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'cardinality' => FieldDefinitionInterface::CARDINALITY_UNLIMITED,
       'translatable' => TRUE,
     ))->save();
     entity_create('field_instance', array(

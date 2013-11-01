@@ -44,7 +44,7 @@ class LocaleSourceUiTest extends TMGMTTestBase {
 
   public function testOverview() {
     $this->loginAsTranslator();
-    $this->drupalGet('admin/tmgmt/sources/locale_default');
+    $this->drupalGet('admin/tmgmt/sources/locale/default');
 
     $this->assertText('Hello World');
     $this->assertText('Example');
@@ -83,7 +83,7 @@ class LocaleSourceUiTest extends TMGMTTestBase {
     $this->drupalGet('admin/tmgmt/items/' . $job_items['es']->tjiid);
     $this->assertRaw('es_Hello World');
     $this->drupalPostForm(NULL, array(), t('Save as completed'));
-    $this->drupalGet('admin/tmgmt/sources/locale_default');
+    $this->drupalGet('admin/tmgmt/sources/locale/default');
 
     $this->assertNoRaw(t('Active job item: Needs review'));
     $rows = $this->xpath('//tbody/tr');

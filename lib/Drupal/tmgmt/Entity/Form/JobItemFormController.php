@@ -7,6 +7,8 @@
 
 namespace Drupal\tmgmt\Entity\Form;
 
+use Drupal\tmgmt\Entity\JobItem;
+
 /**
  * Form controller for the job item edit forms.
  *
