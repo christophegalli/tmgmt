@@ -224,6 +224,18 @@ function tmgmt_local_update_7000() {
 }
 
 /**
+ * Implements hook_preinstall().
+ */
+function tmgmt_local_preinstall($module) {
+  $definition = \Drupal::service('plugin.manager.field.field_type')->getDefinition('tmgmt_language_combination');
+  if (!$definition && $module == 'tmgmt_local') {
+    // Make sure that the field type is available before our
+    // default config is installed.
+    \Drupal::service('plugin.manager.field.field_type')->clearCachedDefinitions();
+  }
+}
+
+/**
  * Implements hook_install().
  */
 function tmgmt_local_install() {
@@ -240,3 +252,4 @@ function tmgmt_local_install() {
   ));
   $form_display->save();
 }
+

@@ -14,12 +14,12 @@ use Drupal\tmgmt\Entity\JobItem;
 function tmgmt_ui_menu() {
   $items['admin/config/regional/tmgmt_settings'] = array(
     'title' => 'Translation Management settings',
-    'route_name' => 'tmgmt_settings',
+    'route_name' => 'tmgmt.settings',
     'weight' => 10,
   );
   $items['admin/config/regional/tmgmt_translator'] = array(
     'title' => 'Translation Management translators',
-    'route_name' => 'tmgmt_translator_list',
+    'route_name' => 'tmgmt.translator_list',
     'weight' => 5,
   );
   return $items;
