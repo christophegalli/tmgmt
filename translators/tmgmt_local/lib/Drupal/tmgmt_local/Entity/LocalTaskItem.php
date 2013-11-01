@@ -2,17 +2,41 @@
 
 /*
  * @file
- * Entity class.
+ * Contains \Drupal\tmgmt_local\Entity\LocalTaskItem.
  */
 
+namespace Drupal\tmgmt_local\Entity;
+
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
+
 
 /**
  * Entity class for the local task item entity.
  *
+ * @EntityType(
+ *   id = "tmgmt_local_task_item",
+ *   label = @Translation("Translation Task Item"),
+ *   module = "tmgmt_local",
+ *   controllers = {
+ *     "storage" = "Drupal\Core\Entity\DatabaseStorageController",
+ *     "access" = "Drupal\tmgmt_local\Entity\Controller\LocalTaskItemAccessController",
+ *     "form" = {
+ *       "edit" = "Drupal\tmgmt_local\Entity\Form\LocalTaskItemFormController"
+ *     },
+ *   },
+ *   uri_callback = "tmgmt_job_item_uri",
+ *   base_table = "tmgmt_local_task_item",
+ *   entity_keys = {
+ *     "id" = "tjiid",
+ *     "uuid" = "uuid"
+ *   }
+ * )
+ *
  * @ingroup tmgmt_local_task
  */
-class TMGMTLocalTaskItem extends Entity {
+class LocalTaskItem extends Entity {
 
   /**
    * Translation local task item identifier.
@@ -100,7 +124,7 @@ class TMGMTLocalTaskItem extends Entity {
    * @return TMGMTLocalTask
    */
   public function getTask() {
-    return entity_load_single('tmgmt_local_task', $this->tltid);
+    return entity_load('tmgmt_local_task', $this->tltid);
   }
 
   /**
@@ -109,15 +133,7 @@ class TMGMTLocalTaskItem extends Entity {
    * @return JobItem
    */
   public function getJobItem() {
-    return entity_load_single('tmgmt_job_item', $this->tjiid);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildContent($view_mode = 'full', $langcode = NULL) {
-    $content = drupal_get_form('tmgmt_local_translation_form', $this);
-    return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
+    return entity_load('tmgmt_job_item', $this->tjiid);
   }
 
   /**
@@ -249,6 +265,68 @@ class TMGMTLocalTaskItem extends Entity {
    */
   public function getCountCompleted() {
     return $this->count_completed;
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageControllerInterface $storage_controller) {
+    parent::preSave($storage_controller);
+    // @todo Eliminate the need to flatten and unflatten the TaskItem data.
+    // Consider everything translated when the job item is translated.
+    if ($this->isCompleted()) {
+      $this->count_untranslated = 0;
+      $this->count_translated = count(tmgmt_flatten_data($this->data));
+      $this->count_completed = 0;
+    }
+    // Consider everything completed if the job is completed.
+    elseif ($this->isClosed()) {
+      $this->count_untranslated = 0;
+      $this->count_translated = 0;
+      $this->count_completed = count(tmgmt_flatten_data($this->data));
+    }
+    // Count the data item states.
+    else {
+      // Start with assuming that all data is untranslated, then go through it
+      // and count translated data.
+      $this->count_untranslated = count(array_filter(tmgmt_flatten_data($this->getJobItem()->getData()), '_tmgmt_filter_data'));
+      $this->count_translated = 0;
+      $this->count_completed = 0;
+      $this->count($this->data);
+    }
+  }
+
+  /**
+   * Parse all data items recursively and sums up the counters for
+   * accepted, translated and pending items.
+   *
+   * @param $item
+   *   The current data item.
+   * @param $this
+   *   The job item the count should be calculated.
+   */
+  protected function count(&$item) {
+    if (!empty($item['#text'])) {
+      if (_tmgmt_filter_data($item)) {
+
+        // Set default states if no state is set.
+        if (!isset($item['#status'])) {
+          $item['#status'] = TMGMT_DATA_ITEM_STATE_UNTRANSLATED;
+        }
+        switch ($item['#status']) {
+          case TMGMT_DATA_ITEM_STATE_TRANSLATED:
+            $this->count_untranslated--;
+            $this->count_translated++;
+            break;
+        }
+      }
+    }
+    else {
+      foreach (element_children($item) as $key) {
+        $this->count($item[$key]);
+      }
+    }
   }
 
 }

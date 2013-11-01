@@ -2,15 +2,42 @@
 
 /*
  * @file
- * Entity class.
+ * Contains \Drupal\tmgmt_local\Entity\LocalTask.
  */
+
+namespace Drupal\tmgmt_local\Entity;
+
+use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
+use Drupal\tmgmt\Entity\JobItem;
 
 /**
  * Entity class for the local task entity.
  *
+ * @EntityType(
+ *   id = "tmgmt_local_task",
+ *   label = @Translation("Translation Task"),
+ *   module = "tmgmt_local",
+ *   controllers = {
+ *     "storage" = "Drupal\Core\Entity\DatabaseStorageController",
+ *     "access" = "Drupal\tmgmt_local\Entity\Controller\LocalTaskAccessController",
+ *     "form" = {
+ *       "edit" = "Drupal\tmgmt_local\Entity\Form\LocalTaskFormController"
+ *     }
+ *   },
+ *   uri_callback = "tmgmt_local_task_uri",
+ *   base_table = "tmgmt_local_task",
+ *   entity_keys = {
+ *     "id" = "tltid",
+ *     "label" = "label",
+ *     "uuid" = "uuid"
+ *   }
+ * )
+ *
+ *
  * @ingroup tmgmt_local_task
  */
-class TMGMTLocalTask extends Entity {
+class LocalTask extends Entity {
 
   /**
    * Translation local task identifier.
@@ -103,23 +130,16 @@ class TMGMTLocalTask extends Entity {
     }
     else {
       if (empty($this->title)) {
-        return t('Task for @job assigned to @translator', array('@job' => $this->getJob()->label(), '@translator' =>  entity_label('user', user_load($this->tuid))));
+        return t('Task for @job assigned to @translator', array('@job' => $this->getJob()->label(), '@translator' => user_load($this->tuid->getUsername())));
       }
       else {
-        return t('@title assigned to @translator', array('@title' => $this->title, '@translator' =>  entity_label('user', user_load($this->tuid))));
+        return t('@title assigned to @translator', array('@title' => $this->title, '@translator' => user_load($this->tuid->getUsername())));
       }
     }
 
 
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildContent($view_mode = 'full', $langcode = NULL) {
-    $content = entity_ui_get_form('tmgmt_local_task', $this);
-    return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
-  }
 
   /**
    * Return the corresponding translation job.
@@ -142,9 +162,9 @@ class TMGMTLocalTask extends Entity {
     $this->status = TMGMT_LOCAL_TASK_STATUS_PENDING;
   }
 
-   /**
-    * Unassign translation task.
-    */
+  /**
+   * Unassign translation task.
+   */
   public function unassign() {
     // We also need to increment loop count when unassigning.
     $this->incrementLoopCount(TMGMT_LOCAL_TASK_STATUS_UNASSIGNED, 0);
@@ -159,21 +179,20 @@ class TMGMTLocalTask extends Entity {
    *   An array of translation job items.
    */
   public function getItems($conditions = array()) {
-    $query = new EntityFieldQuery();
-    $query->entityCondition('entity_type', 'tmgmt_local_task_item');
-    $query->propertyCondition('tltid', $this->tltid);
+    $query = \Drupal::entityQuery('tmgmt_loal_task_item');
+    $query->condition('tltid', $this->tltid);
     foreach ($conditions as $key => $condition) {
       if (is_array($condition)) {
         $operator = isset($condition['operator']) ? $condition['operator'] : '=';
-        $query->propertyCondition($key, $condition['value'], $operator);
+        $query->condition($key, $condition['value'], $operator);
       }
       else {
-        $query->propertyCondition($key, $condition);
+        $query->condition($key, $condition);
       }
     }
     $results = $query->execute();
-    if (!empty($results['tmgmt_local_task_item'])) {
-      return entity_load('tmgmt_local_task_item', array_keys($results['tmgmt_local_task_item']));
+    if (!empty($results)) {
+      return entity_load_multiple('tmgmt_local_task_item', $results);
     }
     return array();
   }
@@ -191,8 +210,8 @@ class TMGMTLocalTask extends Entity {
     }
 
     $local_task = entity_create('tmgmt_local_task_item', array(
-      'tltid' => $this->identifier(),
-      'tjiid' => $job_item->identifier(),
+      'tltid' => $this->id(),
+      'tjiid' => $job_item->id(),
     ));
     $local_task->save();
     return $local_task;
@@ -383,5 +402,27 @@ class TMGMTLocalTask extends Entity {
       ++$this->loop_count;
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageControllerInterface $storage_controller) {
+    parent::preSave($storage_controller);
+    $this->changed = REQUEST_TIME;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageControllerInterface $storage_controller, array $entities) {
+    parent::postDelete($storage_controller, $entities);
+    $ids = \Drupal::entityQuery('tmgmt_local_task_item')
+      ->condition('tltid', array_keys($entities))
+      ->execute();
+    if (!empty($ids)) {
+      entity_delete_multiple('tmgmt_local_task_item', $ids);
+    }
+  }
+
 
 }

@@ -2,13 +2,19 @@
 
 /**
  * @file
- * Provides the user translator UI plugin controller.
+ * Contains \Drupal\tmgmt_local\LocalTranslatorUi.
  */
 
+namespace Drupal\tmgmt_local;
+
+use Drupal\tmgmt\Entity\Job;
+use Drupal\tmgmt\Entity\Translator;
+use Drupal\tmgmt\TranslatorPluginUiBase;
+
 /**
- * Local translator plugin UI controller.
+ * Local translator plugin UI.
  */
-class TMGMTLocalTranslatorUIController extends TMGMTDefaultTranslatorUIController {
+class LocalTranslatorUi extends TranslatorPluginUiBase {
 
   /**
    * {@inheritdoc}
@@ -44,7 +50,7 @@ class TMGMTLocalTranslatorUIController extends TMGMTDefaultTranslatorUIControlle
       $form['job_status'] = array(
         '#type' => 'item',
         '#title' => t('Job status'),
-        '#markup' => t('Translation job is assigned to %name.', array('%name' => entity_label('user', $translator))),
+        '#markup' => t('Translation job is assigned to %name.', array('%name' => $translator->getUsername())),
       );
     }
     else {
@@ -66,7 +72,7 @@ class TMGMTLocalTranslatorUIController extends TMGMTDefaultTranslatorUIControlle
     return $form;
   }
 
-  public function pluginSettingsForm($form, &$form_state, TMGMTTranslator $translator, $busy = FALSE) {
+  public function pluginSettingsForm($form, &$form_state, Translator $translator, $busy = FALSE) {
     $form['allow_all'] = array(
       '#title' => t('Allow translations for enabled languages even if no translator has the necessary capabilities'),
       '#type' => 'checkbox',

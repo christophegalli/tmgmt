@@ -5,17 +5,34 @@
  * Provides the user translator plugin controller.
  */
 
+namespace Drupal\tmgmt_local\Plugin\tmgmt\Translator;
+
+use Drupal\tmgmt\Entity\Job;
+use Drupal\tmgmt\Entity\Translator;
+use Drupal\tmgmt\TranslatorPluginBase;
+
 /**
- * Local translator plugin controller.
+ * Local translator.
+ *
+ * @TranslatorPlugin(
+ *   id = "local",
+ *   label = @Translation("Local translator"),
+ *   description = @Translation("Allows local users to process translation jobs."),
+ *   ui = "\Drupal\tmgmt_local\LocalTranslatorUi",
+ *   default_settings = {
+ *     "auto_accept" = TRUE
+ *   },
+ *   map_remote_languages = FALSE
+ * )
  */
-class TMGMTLocalTranslatorPluginController extends TMGMTDefaultTranslatorPluginController {
+class LocalTranslator extends TranslatorPluginBase {
 
   protected $language_pairs = array();
 
   /**
    * {@inheritdoc}
    */
-  public function requestTranslation(TMGMTJob $job) {
+  public function requestTranslation(Job $job) {
     $tuid = $job->getSetting('translator');
 
     // Create local task for this job.
@@ -23,7 +40,7 @@ class TMGMTLocalTranslatorPluginController extends TMGMTDefaultTranslatorPluginC
       'uid' => $job->uid,
       'tuid' => $tuid,
       'tjid' => $job->tjid,
-      'title' => t('Task for !label', array('!label' => $job->defaultLabel())),
+      'title' => t('Task for !label', array('!label' => $job->label())),
     ));
     // If we have translator then switch to pending state.
     if ($tuid) {
@@ -43,7 +60,7 @@ class TMGMTLocalTranslatorPluginController extends TMGMTDefaultTranslatorPluginC
   /**
    * {@inheritdoc}
    */
-  public function getSupportedTargetLanguages(TMGMTTranslator $translator, $source_language) {
+  public function getSupportedTargetLanguages(Translator $translator, $source_language) {
     $languages = tmgmt_local_supported_target_languages($source_language);
     if ($translator->getSetting('allow_all')) {
       $languages += parent::getSupportedTargetLanguages($translator, $source_language);
@@ -54,7 +71,7 @@ class TMGMTLocalTranslatorPluginController extends TMGMTDefaultTranslatorPluginC
   /**
    * {@inheritdoc}
    */
-  public function getSupportedLanguagePairs(TMGMTTranslator $translator) {
+  public function getSupportedLanguagePairs(Translator $translator) {
 
     if (!empty($this->language_pairs)) {
       return $this->language_pairs;
@@ -74,7 +91,8 @@ class TMGMTLocalTranslatorPluginController extends TMGMTDefaultTranslatorPluginC
 
     if (!in_array(DRUPAL_AUTHENTICATED_RID, array_keys($roles))) {
       $query->join('users_roles', 'ur', 'ur.uid = u.uid AND ur.rid');
-      $or_conditions = db_or()->condition('ur.rid', array_keys($roles))->condition('u.uid', 1);
+      $or_conditions = db_or()->condition('ur.rid', array_keys($roles))
+        ->condition('u.uid', 1);
       $query->condition($or_conditions);
     }
 

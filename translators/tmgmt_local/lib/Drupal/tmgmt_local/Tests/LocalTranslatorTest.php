@@ -2,13 +2,17 @@
 
 /**
  * @file
- * Test cases for the local translator module.
+ * Contains \Drupal\tmgmt_local\Tests\LocalTranslatorTest.
  */
+
+namespace Drupal\tmgmt_local\Tests;
+
+use Drupal\tmgmt\Tests\TMGMTTestBase;
 
 /**
  * Basic tests for the local translator.
  */
-class TMGMTLocalTestCase extends TMGMTBaseTestCase {
+class LocalTranslatorTest extends TMGMTTestBase {
 
   /**
    * Translator user.
@@ -19,9 +23,17 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
 
   protected $local_translator_permissions = array(
     'provide translation services',
-    'use Rules component rules_tmgmt_local_task_assign_to_me',
-    'use Rules component rules_tmgmt_local_task_unassign',
+    //'use Rules component rules_tmgmt_local_task_assign_to_me',
+    //'use Rules component rules_tmgmt_local_task_unassign',
   );
+
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public static $modules = array('tmgmt_language_combination', 'tmgmt_local', 'tmgmt_ui');
 
   static function getInfo() {
     return array(
@@ -32,9 +44,9 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
   }
 
   function setUp() {
-    parent::setUp(array('tmgmt_language_combination', 'tmgmt_local', 'tmgmt_ui'));
+    parent::setUp();
     $this->loginAsAdmin();
-    $this->setEnvironment('de');
+    $this->addLanguage('de');
 
     $this->local_translator = $this->drupalCreateUser($this->local_translator_permissions);
 
@@ -42,44 +54,44 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
 
   function testTranslatorSkillsForTasks() {
 
-    $this->setEnvironment('fr');
+    $this->addLanguage('fr');
 
     $translator1 = $this->drupalCreateUser($this->local_translator_permissions);
     $this->drupalLogin($translator1);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $translator1->id() . '/edit', $edit, t('Save'));
 
     $translator2 = $this->drupalCreateUser($this->local_translator_permissions);
     $this->drupalLogin($translator2);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $translator2->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][1][language_from]' => 'de',
-      'tmgmt_translation_skills[und][1][language_to]' => 'en',
+      'tmgmt_translation_skills[1][language_from]' => 'de',
+      'tmgmt_translation_skills[1][language_to]' => 'en',
     );
     $this->drupalPostForm('user/' . $translator2->id() . '/edit', $edit, t('Save'));
 
     $translator3 = $this->drupalCreateUser($this->local_translator_permissions);
     $this->drupalLogin($translator3);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $translator3->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][1][language_from]' => 'de',
-      'tmgmt_translation_skills[und][1][language_to]' => 'en',
+      'tmgmt_translation_skills[1][language_from]' => 'de',
+      'tmgmt_translation_skills[1][language_to]' => 'en',
     );
     $this->drupalPostForm('user/' . $translator3->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][2][language_from]' => 'en',
-      'tmgmt_translation_skills[und][2][language_to]' => 'fr',
+      'tmgmt_translation_skills[2][language_from]' => 'en',
+      'tmgmt_translation_skills[2][language_to]' => 'fr',
     );
     $this->drupalPostForm('user/' . $translator3->id() . '/edit', $edit, t('Save'));
 
@@ -122,9 +134,9 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->assertEqual(
       tmgmt_local_get_translators_for_tasks(array($local_task1->tltid)),
       array(
-        $translator1->id() => entity_label('user', $translator1),
-        $translator2->id() => entity_label('user', $translator2),
-        $translator3->id() => entity_label('user', $translator3),
+        $translator1->id() => $translator1->getUsername(),
+        $translator2->id() => $translator2->getUsername(),
+        $translator3->id() => $translator3->getUsername(),
       )
     );
 
@@ -132,8 +144,8 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->assertEqual(
       tmgmt_local_get_translators_for_tasks(array($local_task1->tltid, $local_task2->tltid)),
       array(
-        $translator2->id() => entity_label('user', $translator2),
-        $translator3->id() => entity_label('user', $translator3),
+        $translator2->id() => $translator2->getUsername(),
+        $translator3->id() => $translator3->getUsername(),
       )
     );
 
@@ -141,7 +153,7 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->assertEqual(
       tmgmt_local_get_translators_for_tasks(array($local_task1->tltid, $local_task2->tltid, $local_task3->tltid)),
       array(
-        $translator3->id() => entity_label('user', $translator3),
+        $translator3->id() => $translator3->getUsername(),
       )
     );
   }
@@ -165,8 +177,8 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->drupalLogin($other_translator_same);
     // Configure language capabilities.
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $other_translator_same->id() . '/edit', $edit, t('Save'));
 
@@ -175,21 +187,21 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->loginAsAdmin();
     $this->drupalGet($uri['path']);
     $this->assertText(t('Select translator for this job'));
-    $this->assertText($other_translator_same->name);
-    $this->assertNoText($this->local_translator->name);
+    $this->assertText($other_translator_same->getUsername());
+    $this->assertNoText($this->local_translator->getUsername());
 
     $this->drupalLogin($this->local_translator);
     // Configure language capabilities.
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $this->local_translator->id() . '/edit', $edit, t('Save'));
 
     // Check that the translator is now listed.
     $this->loginAsAdmin();
     $this->drupalGet($uri['path']);
-    $this->assertText($this->local_translator->name);
+    $this->assertText($this->local_translator->getUsername());
 
     $job->requestTranslation();
 
@@ -206,8 +218,8 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     $this->drupalLogin($other_translator);
     // Configure language capabilities.
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'de',
-      'tmgmt_translation_skills[und][0][language_to]' => 'en',
+      'tmgmt_translation_skills[0][language_from]' => 'de',
+      'tmgmt_translation_skills[0][language_to]' => 'en',
     );
     $this->drupalPostForm('user/' . $other_translator->id() . '/edit', $edit, t('Save'));
     $this->drupalGet('translate');
@@ -399,8 +411,18 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     // Job was accepted and finished automatically due to the default approve
     // setting.
     $this->assertTrue($job->isFinished());
-    $this->assertEqual($item1->getData(array('dummy', 'deep_nesting', '#translation', '#text')), $translation1);
-    $this->assertEqual($item2->getData(array('dummy', 'deep_nesting', '#translation', '#text')), $translation2);
+    $this->assertEqual($item1->getData(array(
+      'dummy',
+      'deep_nesting',
+      '#translation',
+      '#text'
+    )), $translation1);
+    $this->assertEqual($item2->getData(array(
+      'dummy',
+      'deep_nesting',
+      '#translation',
+      '#text'
+    )), $translation2);
 
     // Delete the job, make sure that the corresponding task and task items were
     // deleted.
@@ -434,51 +456,51 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
 
   function testCapabilitiesAPI() {
 
-    $this->setEnvironment('fr');
-    $this->setEnvironment('ru');
-    $this->setEnvironment('it');
+    $this->addLanguage('fr');
+    $this->addLanguage('ru');
+    $this->addLanguage('it');
 
     $all_translators = array();
 
     $translator1 = $this->drupalCreateUser($this->local_translator_permissions);
-    $all_translators[$translator1->id()] = $translator1->name;
+    $all_translators[$translator1->id()] = $translator1->getUsername();
     $this->drupalLogin($translator1);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'de',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'de',
     );
     $this->drupalPostForm('user/' . $translator1->id() . '/edit', $edit, t('Save'));
 
     $translator2 = $this->drupalCreateUser($this->local_translator_permissions);
-    $all_translators[$translator2->id()] = $translator2->name;
+    $all_translators[$translator2->id()] = $translator2->getUsername();
     $this->drupalLogin($translator2);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'en',
-      'tmgmt_translation_skills[und][0][language_to]' => 'ru',
+      'tmgmt_translation_skills[0][language_from]' => 'en',
+      'tmgmt_translation_skills[0][language_to]' => 'ru',
     );
     $this->drupalPostForm('user/' . $translator2->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][1][language_from]' => 'en',
-      'tmgmt_translation_skills[und][1][language_to]' => 'fr',
+      'tmgmt_translation_skills[1][language_from]' => 'en',
+      'tmgmt_translation_skills[1][language_to]' => 'fr',
     );
     $this->drupalPostForm('user/' . $translator2->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][2][language_from]' => 'fr',
-      'tmgmt_translation_skills[und][2][language_to]' => 'it',
+      'tmgmt_translation_skills[2][language_from]' => 'fr',
+      'tmgmt_translation_skills[2][language_to]' => 'it',
     );
     $this->drupalPostForm('user/' . $translator2->id() . '/edit', $edit, t('Save'));
 
     $translator3 = $this->drupalCreateUser($this->local_translator_permissions);
-    $all_translators[$translator3->id()] = $translator3->name;
+    $all_translators[$translator3->id()] = $translator3->getUsername();
     $this->drupalLogin($translator3);
     $edit = array(
-      'tmgmt_translation_skills[und][0][language_from]' => 'fr',
-      'tmgmt_translation_skills[und][0][language_to]' => 'ru',
+      'tmgmt_translation_skills[0][language_from]' => 'fr',
+      'tmgmt_translation_skills[0][language_to]' => 'ru',
     );
     $this->drupalPostForm('user/' . $translator3->id() . '/edit', $edit, t('Save'));
     $edit = array(
-      'tmgmt_translation_skills[und][1][language_from]' => 'it',
-      'tmgmt_translation_skills[und][1][language_to]' => 'en',
+      'tmgmt_translation_skills[1][language_from]' => 'it',
+      'tmgmt_translation_skills[1][language_to]' => 'en',
     );
     $this->drupalPostForm('user/' . $translator3->id() . '/edit', $edit, t('Save'));
 
@@ -493,42 +515,42 @@ class TMGMTLocalTestCase extends TMGMTBaseTestCase {
     // Test language pairs.
     $this->assertEqual(tmgmt_local_supported_language_pairs(), array (
       'en__de' =>
-      array (
-        'source_language' => 'en',
-        'target_language' => 'de',
-      ),
+        array(
+          'source_language' => 'en',
+          'target_language' => 'de',
+        ),
       'en__ru' =>
-      array (
-        'source_language' => 'en',
-        'target_language' => 'ru',
-      ),
+        array(
+          'source_language' => 'en',
+          'target_language' => 'ru',
+        ),
       'en__fr' =>
-      array (
-        'source_language' => 'en',
-        'target_language' => 'fr',
-      ),
+        array(
+          'source_language' => 'en',
+          'target_language' => 'fr',
+        ),
       'fr__it' =>
-      array (
-        'source_language' => 'fr',
-        'target_language' => 'it',
-      ),
+        array(
+          'source_language' => 'fr',
+          'target_language' => 'it',
+        ),
       'fr__ru' =>
-      array (
-        'source_language' => 'fr',
-        'target_language' => 'ru',
-      ),
+        array(
+          'source_language' => 'fr',
+          'target_language' => 'ru',
+        ),
       'it__en' =>
-      array (
-        'source_language' => 'it',
-        'target_language' => 'en',
-      ),
+        array(
+          'source_language' => 'it',
+          'target_language' => 'en',
+        ),
     ));
-    $this->assertEqual(tmgmt_local_supported_language_pairs('fr', array($translator2->id())), array (
+    $this->assertEqual(tmgmt_local_supported_language_pairs('fr', array($translator2->id())), array(
       'fr__it' =>
-      array (
-        'source_language' => 'fr',
-        'target_language' => 'it',
-      ),
+        array(
+          'source_language' => 'fr',
+          'target_language' => 'it',
+        ),
     ));
 
     // Test if we got all translators.

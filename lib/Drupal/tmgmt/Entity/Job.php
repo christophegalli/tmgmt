@@ -914,18 +914,4 @@ class Job extends Entity {
     return FALSE;
   }
 
-  /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
-   */
-  public function getRevisionId() {
-    return NULL;
-  }
-
-  /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
-   */
-  public function isDefaultRevision() {
-    return TRUE;
-  }
-
 }
