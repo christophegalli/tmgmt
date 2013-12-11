@@ -44,7 +44,7 @@ class EntitySourceUnitTest extends EntityUnitTestBase {
     $this->installSchema('node', array('node', 'node_revision', 'node_field_revision', 'node_field_data'));
     $this->installSchema('tmgmt', array('tmgmt_job', 'tmgmt_job_item', 'tmgmt_message'));
     $this->installSchema('entity_test', array('entity_test_rev', 'entity_test_mul', 'entity_test_mulrev', 'entity_test_mul_property_data'));
-    $this->installSchema('system', array('variable'));
+    $this->installSchema('system', array('variable', 'router'));
     entity_test_install();
 
     // Make the test field translatable.

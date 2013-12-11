@@ -60,7 +60,7 @@ class EntitySource extends SourcePluginBase {
     $translation = $entity->getTranslation($job_item->getJob()->source_language);
     foreach ($translatable_fields as $key => $field_definition) {
       $field = $translation->get($key);
-      $data[$key]['#label'] = $field->getFieldDefinition()->getFieldLabel();
+      $data[$key]['#label'] = $field->getFieldDefinition()->getLabel();
       foreach ($field as $index => $field_item) {
         $data[$key][$index]['#label'] = t('Delta #@delta', array('@delta' => $index));
         foreach ($field_item->getProperties() as $property_key => $property) {
