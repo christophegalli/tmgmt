@@ -53,7 +53,7 @@ class EntitySource extends SourcePluginBase {
     }
     $properties = $entity->getPropertyDefinitions();
     $translatable_fields = array_filter($properties, function ($definition) {
-      return !empty($definition['translatable']);
+      return $definition->isTranslatable();
     });
 
     $data = array();

@@ -163,7 +163,7 @@ abstract class EntityTestBase extends TMGMTTestBase {
         // Create two deltas for each field.
         for ($delta = 0; $delta <= $cardinality; $delta++) {
           $node[$field_name][$delta]['value'] = $this->randomName(20);
-          if ($field_info->getFieldType() == 'text_with_summary') {
+          if ($field_info->getType() == 'text_with_summary') {
             $node[$field_name][$delta]['summary'] = $this->randomName(10);
           }
         }
