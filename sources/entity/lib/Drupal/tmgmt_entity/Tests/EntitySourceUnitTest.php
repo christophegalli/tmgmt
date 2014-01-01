@@ -41,6 +41,23 @@ class EntitySourceUnitTest extends EntityUnitTestBase {
   public function setUp() {
     parent::setUp();
 
+    // Add the languages.
+    $edit = array(
+      'id' => Language::LANGCODE_NOT_SPECIFIED,
+    );
+    $language = new Language($edit);
+    language_save($language);
+    $edit = array(
+      'id' => 'en',
+    );
+    $language = new Language($edit);
+    language_save($language);
+    $edit = array(
+      'id' => 'de',
+    );
+    $language = new Language($edit);
+    language_save($language);
+
     $this->installSchema('node', array('node', 'node_revision', 'node_field_revision', 'node_field_data'));
     $this->installSchema('tmgmt', array('tmgmt_job', 'tmgmt_job_item', 'tmgmt_message'));
     $this->installSchema('entity_test', array('entity_test_rev', 'entity_test_mul', 'entity_test_mulrev', 'entity_test_mul_property_data'));
@@ -76,18 +93,6 @@ class EntitySourceUnitTest extends EntityUnitTestBase {
     $this->image->save();
 
     tmgmt_translator_auto_create(\Drupal::service('plugin.manager.tmgmt.translator')->getDefinition('test_translator'));
-
-    // Add the languages.
-    $edit = array(
-      'id' => 'en',
-    );
-    $language = new Language($edit);
-    language_save($language);
-    $edit = array(
-      'id' => 'de',
-    );
-    $language = new Language($edit);
-    language_save($language);
   }
 
   public function testEntityTest() {

@@ -19,7 +19,7 @@ class EntitySourceUiTest extends EntityTestBase {
    *
    * @var array
    */
-  public static $modules = array('tmgmt_entity_ui', 'block', 'comment');
+  public static $modules = array('tmgmt_entity_ui', 'comment');
 
   static function getInfo() {
     return array(

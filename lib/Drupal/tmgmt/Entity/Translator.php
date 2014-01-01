@@ -25,7 +25,7 @@ use Drupal\Core\Annotation\Translation;
  *       "edit" = "Drupal\tmgmt\Entity\Form\TranslatorFormController",
  *       "add" = "Drupal\tmgmt\Entity\Form\TranslatorFormController"
  *     },
- *     "list" = "Drupal\tmgmt\Entity\Controller\TranslatorListController",
+ *     "list" = "Drupal\tmgmt\Entity\Controller\TranslatorList",
  *     "access" = "Drupal\tmgmt\Entity\Controller\TranslatorAccessController",
  *   },
  *   uri_callback = "tmgmt_translator_uri",

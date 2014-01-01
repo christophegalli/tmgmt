@@ -2,18 +2,18 @@
 
 /**
  * @file
- * Contains \Drupal\tmgmt\Entity\Controller\TranslatorListController.
+ * Contains \Drupal\tmgmt\Entity\Controller\TranslatorList.
  */
 
 namespace Drupal\tmgmt\Entity\Controller;
 
-use Drupal\Core\Config\Entity\DraggableListController;
+use Drupal\Core\Config\Entity\DraggableList;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Provides a listing of translators.
  */
-class TranslatorListController extends DraggableListController {
+class TranslatorList extends DraggableList {
 
   /**
    * {@inheritdoc}

@@ -10,6 +10,7 @@ namespace Drupal\tmgmt\Entity;
 use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\Annotation\EntityType;
 use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Entity class for the tmgmt_message entity.
@@ -169,17 +170,15 @@ class Message extends Entity {
   }
 
   /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
+   * {@inheritdoc}
    */
-  public function getRevisionId() {
-    return NULL;
+  public static function postLoad(EntityStorageControllerInterface $storage_controller, array &$entities) {
+    parent::postLoad($storage_controller, $entities);
+    foreach ($entities as $entity) {
+      $entity->variables = unserialize($entity->variables);
+    }
   }
 
-  /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
-   */
-  public function isDefaultRevision() {
-    return TRUE;
-  }
+
 
 }

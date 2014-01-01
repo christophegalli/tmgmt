@@ -33,14 +33,4 @@ class JobItemStorageController extends DatabaseStorageController {
     parent::invoke($hook, $entity);
   }
 
-  /**
-   * Overrides Drupal\entity\DatabaseStorageConroller::attachLoad().
-   */
-  public function attachLoad(&$queried_entities, $revision_id = FALSE) {
-    parent::attachLoad($queried_entities, $revision_id);
-    foreach ($queried_entities as $queried_entity) {
-      $queried_entity->data = unserialize($queried_entity->data);
-    }
-  }
-
 }

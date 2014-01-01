@@ -7,3 +7,4 @@ type: module
 dependencies:
   - tmgmt
   - views
+  - block

@@ -10,6 +10,7 @@ namespace Drupal\tmgmt\Entity;
 use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\Annotation\EntityType;
 use Drupal\Core\Annotation\Translation;
+use Drupal\Core\Entity\EntityStorageControllerInterface;
 
 /**
  * Entity class for the tmgmt_remote entity.
@@ -100,7 +101,7 @@ class RemoteMapping extends Entity {
    *
    * @var array
    */
-  public $remote_data;
+  public $remote_data = array();
 
   /**
    * Overrides \Drupal\Core\Entity\Entiy::id().
@@ -167,17 +168,13 @@ class RemoteMapping extends Entity {
   }
 
   /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
+   * {@inheritdoc}
    */
-  public function getRevisionId() {
-    return NULL;
-  }
-
-  /**
-   * @todo: Remove when http://drupal.org/node/2095399 is in.
-   */
-  public function isDefaultRevision() {
-    return TRUE;
+  public static function postLoad(EntityStorageControllerInterface $storage_controller, array &$entities) {
+    parent::postLoad($storage_controller, $entities);
+    foreach ($entities as $entity) {
+      $entity->remote_data = unserialize($entity->remote_data);
+    }
   }
 
 }

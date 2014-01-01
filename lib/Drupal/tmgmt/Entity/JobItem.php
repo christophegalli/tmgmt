@@ -1006,4 +1006,14 @@ class JobItem extends Entity {
     $this->{$property_name} = $value;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function postLoad(EntityStorageControllerInterface $storage_controller, array &$entities) {
+    parent::postLoad($storage_controller, $entities);
+    foreach ($entities as $entity) {
+      $entity->data = unserialize($entity->data);
+    }
+  }
+
 }
