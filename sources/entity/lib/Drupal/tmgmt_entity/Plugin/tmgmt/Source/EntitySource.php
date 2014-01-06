@@ -121,9 +121,9 @@ class EntitySource extends SourcePluginBase {
   public function getItemTypes() {
     $entity_types = \Drupal::entityManager()->getDefinitions();
     $types = array();
-    foreach ($entity_types as $entity_type => $definition) {
-      if (content_translation_enabled($entity_type)) {
-        $types[$entity_type] = $definition['label'];
+    foreach ($entity_types as $entity_type_name => $entity_type) {
+      if (content_translation_enabled($entity_type_name)) {
+        $types[$entity_type_name] = $entity_type->getLabel();
       }
     }
     return $types;
@@ -135,18 +135,15 @@ class EntitySource extends SourcePluginBase {
   public function getType(JobItem $job_item) {
     if ($entity = entity_load($job_item->item_type, $job_item->item_id)) {
       $bundles = entity_get_bundles($job_item->item_type);
-      $info = $entity->entityInfo();
+      $entity_type = $entity->entityInfo();
       $bundle = $entity->bundle();
       // Display entity type and label if we have one and the bundle isn't
       // the same as the entity type.
       if (isset($bundles[$bundle]) && $bundle != $job_item->item_type) {
-        return t('@type (@bundle)', array('@type' => $info['label'], '@bundle' => $bundles[$bundle]['label']));
+        return t('@type (@bundle)', array('@type' => $entity_type->getLabel(), '@bundle' => $bundles[$bundle]['label']));
       }
       // Otherwise just display the entity type label.
-      elseif (isset($info['label'])) {
-        return $info['label'];
-      }
-      return parent::getType($job_item);
+      return $entity_type->getLabel();
     }
   }
 

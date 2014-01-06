@@ -101,9 +101,8 @@ class EntitySourceUiTest extends EntityTestBase {
     $this->assertText(t('The translation for @title has been accepted.', array('@title' => $node->getTitle())));
 
     // German node should now be listed and be clickable.
-    // @todo Improve detection of the link, e.g. use xpath on the table or the
-    // title module to get a better title.
-    $this->clickLink($node->label(), 3);
+    $this->clickLink('de_' . $node->label());
+    $this->assertText('de_' . $node->getTitle());
     $this->assertText('de_' . $node->body->value);
 
     // Test that the destination query argument does not break the redirect
@@ -177,9 +176,11 @@ class EntitySourceUiTest extends EntityTestBase {
     // Translated nodes should now be listed and be clickable.
     // @todo Use links on translate tab.
     $this->drupalGet('de/node/' . $node->id());
+    $this->assertText('de_' . $node->getTitle());
     $this->assertText('de_' . $node->body->value);
 
     $this->drupalGet('es/node/' . $node->id());
+    $this->assertText('es_' . $node->getTitle());
     $this->assertText('es_' . $node->body->value);
   }
 
